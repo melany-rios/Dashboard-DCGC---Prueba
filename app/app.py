@@ -84,7 +84,7 @@ elif auth_status:
             pd.read_csv("data/armamento.csv")
         )
 
-    df_rrhh, df_arm = load_data()
+    df_rrhh, df_armas = load_data()
 
     # ============================================
     # MENÚ

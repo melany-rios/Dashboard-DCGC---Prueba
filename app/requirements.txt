@@ -1,7 +1,8 @@
 streamlit
 pandas
+numpy
 plotly
-streamlit-authenticator
-pyyaml
+folium
 streamlit-folium
+streamlit-authenticator
 reportlab

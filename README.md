@@ -63,20 +63,18 @@ El proyecto forma parte de la **Tecnicatura en Ciencia de Datos e Inteligencia A
 ├── app/
 │ ├── app.py
 │ ├── requirements.txt
-│── README.md
 │
 ├── data/
-│ ├── rrhh_dependencias.csv
 │ ├── armamento.csv
+│ ├── rrhh_dependencias.csv
+│
+├── docs/
+│ ├── G6_Informe PP2_SedeCentral.pdf
 │
 ├── notebooks/
 │ └── g6_pp3_analisis_completo.ipynb
 │
-└── img/
-├── captura_inicio.png
-├── captura_rrhh.png
-├── captura_mapa.png
-
+│── README.md
 
 ---
 

@@ -232,7 +232,7 @@ elif auth_status:
     if seccion == "📄 Reporte PDF":
         st.title("📄 Generación de Reporte PDF")
 
-         buffer = io.BytesIO()
+        buffer = io.BytesIO()
 
         c = canvas.Canvas(buffer)
         c.setFont("Helvetica-Bold", 16)

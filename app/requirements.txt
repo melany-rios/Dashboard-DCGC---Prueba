@@ -4,5 +4,5 @@ numpy
 plotly
 folium
 streamlit-folium
-streamlit-authenticator
+streamlit-authenticator==0.2.3
 reportlab

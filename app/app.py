@@ -6,12 +6,12 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import streamlit_authenticator as stauth
-from streamlit_folium import st_folium
 import folium
-from io import BytesIO
+from streamlit_folium import st_folium
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
+import streamlit_authenticator as stauth
+import tempfile
+import io
 
 # ============================================
 # CONFIGURACIÓN INICIAL
@@ -23,33 +23,54 @@ st.set_page_config(
     layout="wide"
 )
 
-# ============================================
-# LOGIN
-# ============================================
+# ==========================================================
+# SISTEMA DE AUTENTICACIÓN
+# ==========================================================
+import streamlit as st
+import streamlit_authenticator as stauth
 
+# --- Datos de usuarios ---
 names = ["Administrador", "Invitado"]
 usernames = ["admin", "invitado"]
+
+# Contraseñas en texto plano (solo para desarrollo, luego cambiar)
 passwords = ["admin123", "invitado123"]
 
-hashed_pw = stauth.Hasher(passwords).generate()
+# --- Hashear contraseñas ---
+hashed_passwords = stauth.Hasher(passwords).generate()
 
+# --- Objeto de credenciales ---
+credentials = {
+    "usernames": {
+        usernames[i]: {
+            "name": names[i],
+            "password": hashed_passwords[i]
+        } for i in range(len(usernames))
+    }
+}
+
+# --- Inicializar Autenticador ---
 authenticator = stauth.Authenticate(
-    names, usernames, hashed_pw,
-    "dashboard_cookie", "secret_signature_key", cookie_expiry_days=1
+    credentials,
+    "dashboard_dcgc",       # nombre cookie → puede ser cualquiera
+    "clave_cookie_123456",  # clave secreta → cambiar en producción
+    cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login("Login", "main")
+# --- Render del Login ---
+name, auth_status, username = authenticator.login("🔐 Inicio de Sesión", "main")
 
-if authentication_status is False:
-    st.error("Usuario o contraseña incorrectos")
+# --- Gestión de estados ---
+if auth_status is False:
+    st.error("❌ Usuario o contraseña incorrectos.")
 
-if authentication_status is None:
-    st.warning("Ingrese sus credenciales")
+elif auth_status is None:
+    st.warning("🔐 Por favor ingrese su usuario y contraseña.")
 
-if authentication_status:
-
-    st.sidebar.write(f"Hola, {name} 👋")
-    authenticator.logout("Cerrar sesión", "sidebar")
+elif auth_status:
+    # Encabezado de la app
+    authenticator.logout("Cerrar Sesión", "sidebar")
+    st.sidebar.success(f"Sesión iniciada como: **{name}**")
 
     # ============================================
     # CARGA DE DATOS
@@ -107,19 +128,33 @@ if authentication_status:
     if seccion == "👮‍♂️ Recursos Humanos":
         st.title("👮‍♂️ Recursos Humanos")
 
-        regiones = st.multiselect("Región", df_rrhh.region.unique())
-        deps = st.multiselect("Dependencia", df_rrhh.dependencia.unique())
+        col1, col2 = st.columns(2)
 
-        df_f = df_rrhh.copy()
-        if regiones:
-            df_f = df_f[df_f.region.isin(regiones)]
-        if deps:
-            df_f = df_f[df_f.dependencia.isin(deps)]
+        # --- Jerarquías ---
+        with col1:
+            fig = px.bar(
+                df_rrhh["jerarquia"].value_counts(),
+                title="Jerarquías del Personal"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("Cantidad por Jerarquía")
-        fig1 = px.histogram(df_f, x="jerarquia", color="jerarquia")
-        st.plotly_chart(fig1, use_container_width=True)
+        # --- Estado del Funcionario ---
+        with col2:
+            fig = px.pie(
+                df_rrhh,
+                names="estado_funcionario",
+                title="Estado del Personal"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
+        st.subheader("Personal por Dependencia")
+        fig = px.bar(
+            df_rrhh.groupby("dependencia").size().reset_index(name="cantidad"),
+            x="dependencia", y="cantidad",
+            title="Cantidad de Personal por Dependencia"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
     # ============================================
     # 3) ARMAMENTO
     # ============================================
@@ -127,7 +162,25 @@ if authentication_status:
     if seccion == "🔫 Armamento":
         st.title("🔫 Estado de Armamento")
 
-        fig = px.pie(df_arm, names="estado_arma", title="Estado operativo")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            fig = px.pie(df_armas, names="tipo_arma", title="Tipos de Armas")
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            fig = px.bar(
+                df_armas["estado_arma"].value_counts(),
+                title="Estado Operativo del Armamento"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("Armas por Dependencia")
+        fig = px.bar(
+            df_armas.groupby("dependencia").size().reset_index(name="cantidad"),
+            x="dependencia", y="cantidad",
+            title="Cantidad de Armas por Dependencia"
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     # ============================================
@@ -157,7 +210,7 @@ if authentication_status:
             "Departamental Nº 16 Los Flores (Capital)": (-27.790, -64.276)
         }
 
-        mapa = folium.Map(location=[-27.78, -64.26], zoom_start=6)
+        mapa = folium.Map(location=[-27.8, -64.3], zoom_start=7)
 
         for _, row in df_rrhh.iterrows():
             dep = row["dependencia"]
@@ -169,7 +222,7 @@ if authentication_status:
                     icon=folium.Icon(color="blue", icon="info-sign")
                 ).add_to(mapa)
 
-        st_folium(mapa, width=1200)
+        st_folium(mapa, width=1200, height=600)
 
     # ============================================
     # 5) GENERAR PDF
@@ -178,17 +231,23 @@ if authentication_status:
     if seccion == "📄 Reporte PDF":
         st.title("📄 Generación de Reporte PDF")
 
-        buffer = BytesIO()
-        c = canvas.Canvas(buffer, pagesize=letter)
+         buffer = io.BytesIO()
+
+        c = canvas.Canvas(buffer)
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(50, 800, "Reporte Institucional")
         c.setFont("Helvetica", 12)
 
-        c.drawString(50, 750, "Reporte Institucional – Policía")
-        c.drawString(50, 730, f"Total Personal: {df_rrhh.shape[0]}")
-        c.drawString(50, 710, f"Dependencias: {df_rrhh['dependencia'].nunique()}")
-        c.drawString(50, 690, f"Armas Registradas: {df_arm.shape[0]}")
+        c.drawString(50, 770, f"Total de Personal: {df_rrhh.shape[0]}")
+        c.drawString(50, 750, f"Dependencias: {df_rrhh['dependencia'].nunique()}")
+        c.drawString(50, 730, f"Armas Registradas: {df_armas.shape[0]}")
 
-        c.drawString(50, 660, "Generado automáticamente desde el dashboard.")
         c.showPage()
         c.save()
 
-        st.download_button("📄 Descargar PDF", data=buffer.getvalue(), file_name="reporte.pdf")
+        st.download_button(
+            label="📥 Descargar PDF",
+            data=buffer.getvalue(),
+            file_name="reporte_institucional.pdf",
+            mime="application/pdf"
+        )

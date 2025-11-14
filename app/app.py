@@ -120,7 +120,7 @@ elif auth_status:
         col1, col2, col3 = st.columns(3)
         col1.metric("👮‍♂️ Personal total", df_rrhh.shape[0])
         col2.metric("🏢 Dependencias", df_rrhh['dependencia'].nunique())
-        col3.metric("🔫 Armas registradas", df_arm.shape[0])
+        col3.metric("🔫 Armas registradas", df_armas.shape[0])
 
     # ============================================
     # 2) RECURSOS HUMANOS

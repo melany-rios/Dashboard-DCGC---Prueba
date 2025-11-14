@@ -24,51 +24,52 @@ st.set_page_config(
 )
 
 # ==========================================================
-# SISTEMA DE AUTENTICACIÓN
+# AUTENTICACIÓN COMPATIBLE STREAMLIT CLOUD
 # ==========================================================
 import streamlit as st
+
+# 👇 IMPORTACIÓN CORRECTA (universal)
 import streamlit_authenticator as stauth
 
 # --- Datos de usuarios ---
 names = ["Administrador", "Invitado"]
 usernames = ["admin", "invitado"]
 
-# Contraseñas en texto plano (solo para desarrollo, luego cambiar)
+# Contraseñas en texto plano
 passwords = ["admin123", "invitado123"]
 
-# --- Hashear contraseñas ---
+# 👇 MÉTODO UNIVERSAL PARA HASHEAR CONTRASEÑAS
 hashed_passwords = stauth.Hasher(passwords).generate()
 
-# --- Objeto de credenciales ---
-credentials = {
-    "usernames": {
-        usernames[i]: {
-            "name": names[i],
-            "password": hashed_passwords[i]
-        } for i in range(len(usernames))
-    }
-}
+# --- Diccionario de credenciales ---
+credentials = {"usernames": {}}
 
-# --- Inicializar Autenticador ---
+for i in range(len(usernames)):
+    credentials["usernames"][usernames[i]] = {
+        "name": names[i],
+        "password": hashed_passwords[i]
+    }
+
+# --- Inicialización del autenticador ---
 authenticator = stauth.Authenticate(
     credentials,
-    "dashboard_dcgc",       # nombre cookie → puede ser cualquiera
-    "clave_cookie_123456",  # clave secreta → cambiar en producción
+    "cookie_dashboard_dcgc",
+    "cookie_key_123456789",  # puede ser cualquier string
     cookie_expiry_days=1
 )
 
-# --- Render del Login ---
+# --- Renderizar formulario de login ---
 name, auth_status, username = authenticator.login("🔐 Inicio de Sesión", "main")
 
-# --- Gestión de estados ---
+# --- Manejo de estados ---
 if auth_status is False:
     st.error("❌ Usuario o contraseña incorrectos.")
 
 elif auth_status is None:
-    st.warning("🔐 Por favor ingrese su usuario y contraseña.")
+    st.warning("Ingrese sus credenciales para continuar.")
 
 elif auth_status:
-    # Encabezado de la app
+    # Logout en barra lateral
     authenticator.logout("Cerrar Sesión", "sidebar")
     st.sidebar.success(f"Sesión iniciada como: **{name}**")
 

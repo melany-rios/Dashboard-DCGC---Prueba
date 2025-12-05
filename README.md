@@ -123,7 +123,7 @@ Grupo 6 – Tecnicatura en Ciencia de Datos e Inteligencia Artificial
 
 [![Video Demo](https://img.youtube.com/vi/-6hmsZqvydU/0.jpg)](https://www.youtube.com/watch?v=-6hmsZqvydU)
 
-👉 Haz clic en la imagen para ver el video completo de la demo técnica.
+👉 Haz clic en la imagen para ver el video completo.
 
 
 📚 Licencia

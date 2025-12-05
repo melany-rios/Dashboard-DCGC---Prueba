@@ -98,6 +98,11 @@ streamlit run app.py
 - 5. Agregar requirements.txt.
 La app estará disponible en una URL pública para presentación del proyecto.
 
+## 🚀 Dashboard Interactivo (Streamlit)
+El dashboard del proyecto ya se encuentra desplegado en línea:
+👉 https://dashboard-dcgc-apzexjm5x5mcxumhyrdw2m.streamlit.app/
+
+
 ### 🔐 Notas sobre Seguridad y Privacidad
 - Este dashboard implementa:
 - Anonimización mediante hash SHA-256
@@ -113,6 +118,13 @@ Grupo 6 – Tecnicatura en Ciencia de Datos e Inteligencia Artificial
 - Jimenez, Javier Oscar.
 - Rios Santillan, Melany Ayelen.
 - Docente: Mubarqui Fernando
+
+## 🎥 Presentación Final
+
+[![Video Demo](https://img.youtube.com/vi/-6hmsZqvydU/0.jpg)](https://www.youtube.com/watch?v=-6hmsZqvydU)
+
+👉 Haz clic en la imagen para ver el video completo de la demo técnica.
+
 
 📚 Licencia
 Este proyecto se distribuye con fines educativos.
